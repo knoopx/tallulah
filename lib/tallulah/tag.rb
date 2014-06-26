@@ -6,9 +6,13 @@ module Tallulah
 
     attr_reader :name, :attributes
 
-    def initialize(parent, name, attrs = {})
+    def initialize(parent, name, attrs = default_attributes)
       super(parent)
       @name, @attributes = name, Attributes.new(attrs)
+    end
+
+    def default_attributes
+      {}
     end
 
     def [](key)

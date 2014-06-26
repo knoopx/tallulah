@@ -6,7 +6,7 @@ module Tallulah
     class << self
       def tag(*names)
         Array.wrap(names).each do |name|
-          define_method(name) do |attrs = {}|
+          define_method("#{name}_tag") do |attrs = {}|
             append_node(Tag.new(self, name, attrs))
           end
         end
@@ -14,21 +14,19 @@ module Tallulah
 
       def content_tag(*names)
         Array.wrap(names).each do |name|
+          tag_class_name = name.upcase
+          tag_class = Class.new(ContentTag) do
+            define_method(:initialize) do |parent, attrs = default_attributes, &block|
+              super(parent, name, attrs, &block)
+            end
+          end
+
+          const_set(tag_class_name, tag_class)
+
           class_eval <<-RUBY, __FILE__, __LINE__
-            def #{name}(*args)
+            def #{name}_tag(*args, &block)
               attrs = args.extract_options!
-
-              tag = ContentTag.new(self, "#{name}", attrs)
-
-              within_node(tag) do
-                if block_given?
-                  yield
-                else
-                  text(args.first)
-                end
-              end
-
-              append_node(tag)
+              append_node(#{tag_class_name}.new(self, attrs, &block))
             end
           RUBY
         end

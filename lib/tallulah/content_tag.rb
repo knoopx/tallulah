@@ -2,11 +2,20 @@ require 'active_support/core_ext/string/output_safety'
 
 module Tallulah
   class ContentTag < Tag
-    attr_reader :children
+    include Context
+    include HTML
 
-    def initialize(parent, name, attrs = {})
-      super(parent, name, attrs)
+    def initialize(parent, name, *args, &block)
+      attrs = args.extract_options!
+      super(parent, name, attrs, &nil)
+
       @children = []
+
+      if block
+        instance_eval(&block)
+      else
+        text(args.first)
+      end
     end
 
     def to_html

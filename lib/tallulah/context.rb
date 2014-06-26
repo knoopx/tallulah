@@ -6,38 +6,27 @@ module Tallulah
     extend ActiveSupport::Concern
 
     included do
-      include Tallulah::HTML
-
-      attr_reader :children, :current_node
+      attr_reader :children
     end
 
     def append_node(node)
-      @current_node.children << node
+      @children << node
       node
-    end
-
-    def within_node(node)
-      previous_node = @current_node
-      @current_node = node
-      yield
-    ensure
-      @current_node = previous_node
-    end
-
-    def with_tallulah
-      _children = @children
-      _current_node = @current_node
-      @children = []
-      @current_node = self
-      yield
-      to_html
-    ensure
-      @children = _children
-      @current_node = _current_node
     end
 
     def to_html
       @children.map(&:to_html).join.html_safe
+    end
+
+    module ClassMethods
+      def register_component(name)
+        component_class = self
+        Context.class_eval do
+          define_method(name) do |*args, &block|
+            append_node(component_class.new(self, *args, &block))
+          end
+        end
+      end
     end
   end
 end

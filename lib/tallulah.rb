@@ -1,5 +1,6 @@
 module Tallulah
   autoload :ActionView, "tallulah/action_view"
+  autoload :Component, "tallulah/component"
   autoload :ContentTag, "tallulah/content_tag"
   autoload :Context, "tallulah/context"
   autoload :HTML, "tallulah/html"
